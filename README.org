@@ -1,0 +1,6 @@
+Motivation:
+
+Nested structs with viper
+
+https://carolynvanslyck.com/blog/2020/08/sting-of-the-viper/
+https://github.com/carolynvs/stingoftheviper#sting-of-the-viper

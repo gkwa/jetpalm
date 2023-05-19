@@ -5,28 +5,96 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var (
+	defaultConfigFilename      = "jetpalm"
+	envPrefix                  = "STING"
+	replaceHyphenWithCamelCase = false
+	cfgFile                    string
+)
+
+func initializeConfig(cmd *cobra.Command, cfg *Config) error {
+	v := createViperInstance()
+
+	SetDefaultConfigValues(cfg)
+	// Check if the default config file exists
+	if err := WriteDefaultConfigToFile(cfg, defaultConfigFilename+".yaml"); err != nil {
+		return err
+	}
+
+	// Read the config file
+	if err := v.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return err
+		}
+	}
+
+	v.AutomaticEnv()
+	bindFlags(cmd, v)
+
+	if err := v.Unmarshal(cfg); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getConfigName(f *pflag.Flag) string {
+	configName := f.Name
+	if replaceHyphenWithCamelCase {
+		configName = strings.ReplaceAll(f.Name, "-", "")
+	}
+	return configName
+}
+
+func bindFlags(cmd *cobra.Command, v *viper.Viper) {
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+		configName := getConfigName(f)
+		if !f.Changed && v.IsSet(configName) {
+			val := v.Get(configName)
+			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+		}
+	})
+}
+
+func createViperInstance() *viper.Viper {
+	v := viper.New()
+	v.SetConfigName(defaultConfigFilename)
+	v.AddConfigPath(".")
+	v.SetEnvPrefix(envPrefix)
+	v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	return v
+}
+
+func NewRootCommand() *cobra.Command {
+	var cfg Config
+
+	rootCmd := &cobra.Command{
+		Use:   "jetpalm",
+		Short: "Cober and Viper together at last",
+		Long:  `Demonstrate how to get cobra flags to bind to viper properly`,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return initializeConfig(cmd, &cfg)
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			out := cmd.OutOrStdout()
+			PrintConfigValues(out, &cfg)
+		},
+	}
+
+	return rootCmd
+}
 
 // rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "jetpalm",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
-}
+var rootCmd = NewRootCommand()
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -73,4 +141,8 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func PrintConfigValues(out io.Writer, cfg *Config) {
+	fmt.Fprintln(out, "push-frequency:", cfg.Client.PushFrequency)
 }
