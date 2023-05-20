@@ -43,7 +43,7 @@ func NewDefaultConfig() *Config {
 		},
 		SQS: SQSConfig{
 			Region:   "us-west-2",
-			QueueARN: "arn:aws:sqs:us-west-2:193048895737",
+			QueueARN: "arn:aws:sqs:us-west-2:123456789012",
 			QueueURL: "https://sqs.us-west-2.amazonaws.com/193048895737/somename",
 		},
 		S3Bucket: S3BucketConfig{
