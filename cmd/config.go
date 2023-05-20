@@ -15,7 +15,7 @@ type Config struct {
 }
 
 type ClientConfig struct {
-	PushFrequency string `yaml:"push-frequency"`
+	PushFrequency string `yaml:"pushfrequency"`
 }
 
 type S3BucketConfig struct {

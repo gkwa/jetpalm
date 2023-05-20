@@ -144,5 +144,5 @@ func initConfig() {
 }
 
 func PrintConfigValues(out io.Writer, cfg *Config) {
-	fmt.Fprintln(out, "push-frequency:", cfg.Client.PushFrequency)
+	fmt.Fprintln(out, "pushfrequency:", cfg.Client.PushFrequency)
 }
