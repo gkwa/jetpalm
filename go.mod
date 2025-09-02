@@ -6,7 +6,7 @@ toolchain go1.25.0
 
 require (
 	github.com/spf13/cobra v1.9.1
-	github.com/spf13/pflag v1.0.8
+	github.com/spf13/pflag v1.0.9
 	github.com/spf13/viper v1.20.1
 	gopkg.in/yaml.v3 v3.0.1
 )
