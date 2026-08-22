@@ -2,7 +2,7 @@ module github.com/taylormonacelli/jetpalm
 
 go 1.23.0
 
-toolchain go1.26.6
+toolchain go1.27.0
 
 require (
 	github.com/spf13/cobra v1.10.2
